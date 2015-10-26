@@ -11,9 +11,7 @@ namespace aws_sdk
 {
     class Program
     {
-        static string existingBucketName = "sit-traffic-cop-s3externaluploadbucket-17bmyhy9ix11x";
         static string filePath = @"c:\temp\test.jpg";
-        private static string popeyeUrl = "https://api.myob.com/popeye-sit/";
 
         static void Main(string[] args)
         {
@@ -82,7 +80,7 @@ namespace aws_sdk
         {
             using (var httpClient = new HttpClient())
             {
-                var baseurl = popeyeUrl;
+                var baseurl = ConfigurationManager.AppSettings["PopeyeBaseUrl"];
                 if (string.IsNullOrEmpty(baseurl)) throw new Exception("popeyeUrl value is not found in the config.");
                 if (!baseurl.EndsWith("/")) baseurl += "/";
 
