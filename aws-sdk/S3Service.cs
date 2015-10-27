@@ -35,33 +35,29 @@ namespace aws_sdk
 
         public static async Task UploadFile()
         {
+            var token = await S3Service.GetS3Token("upload");
+            UploadFile(token, "c:/temp/test.jpg");
+        }
+
+        public static async Task UploadFile(dynamic token, string filePath)
+        {
             try
             {
-                var token = await S3Service.GetS3Token("upload");
-
-                string filePath = "c:/temp/test.jpg";
-                string awsAccessKeyId = token.accessKeyId;
-                string awsSecretAccessKey = token.secretAccessKey;
-                string awsSessionToken = token.sessionToken;
-                string existingBucketName = token.bucket;
                 string keyName = string.Format("{0}/{1}", token.path, Path.GetFileName(filePath));
-                string password = token.uploadPassword;
 
-                var client = new AmazonS3Client(awsAccessKeyId, awsSecretAccessKey, awsSessionToken, RegionEndpoint.APSoutheast2);
+                var client = new AmazonS3Client(token.accessKeyId, token.secretAccessKey, token.sessionToken, RegionEndpoint.APSoutheast2);
                 var fileTransferUtility = new TransferUtility(client);
 
                 var request = new TransferUtilityUploadRequest
                 {
-                    BucketName = existingBucketName,
+                    BucketName = token.bucket,
                     FilePath = filePath,
-                    PartSize = 6291456, // 6 MB.
                     Key = keyName,
+                    PartSize = 6291456, // 6 MB.
                     ServerSideEncryptionMethod = ServerSideEncryptionMethod.AES256
                 };
 
                 await fileTransferUtility.UploadAsync(request);
-                Console.WriteLine("Upload 1 completed");
-               
             }
             catch (AmazonS3Exception s3Exception)
             {
