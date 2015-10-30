@@ -50,7 +50,7 @@ namespace aws_sdk
         {
             var filePath = "c:/temp/test.jpg";
             var token = await S3Service.GetS3Token("upload");
-            S3Service.UploadFile(token, filePath);
+            await S3Service.UploadFile(token, filePath);
 
             var popeyeApiUrl = ConfigurationManager.AppSettings["PopeyeBaseUrl"];
             var popeyeApiDeveloperKey = ConfigurationManager.AppSettings["MyobApiKey"];
