@@ -38,7 +38,7 @@ namespace aws_sdk
             UploadFile(token, "c:/temp/test.jpg");
         }
 
-        public static void UploadFile(dynamic token, string filePath)
+        public static async Task UploadFile(dynamic token, string filePath)
         {
             try
             {
@@ -62,7 +62,7 @@ namespace aws_sdk
                     ServerSideEncryptionMethod = ServerSideEncryptionMethod.AES256
                 };
 
-                fileTransferUtility.UploadAsync(request);
+                await fileTransferUtility.UploadAsync(request);
                 Trace.WriteLine(token.uploadPassword);
             }
             catch (AmazonS3Exception s3Exception)
