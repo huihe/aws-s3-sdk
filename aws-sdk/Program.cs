@@ -6,7 +6,7 @@ namespace aws_sdk
     {
         static void Main(string[] args)
         {
-            S3Service.UploadFile().Wait();
+            S3Service.UploadFile();
             Console.ReadKey();
         }
        

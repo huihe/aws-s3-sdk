@@ -46,10 +46,14 @@ namespace aws_sdk
         }
 
         [Test]
-        public void SendEmailViaPopeye()
+        public async Task SendEmailViaPopeye()
         {
-            var popeyeApiUrl = ConfigurationManager.AppSettings["PopeyeApiUrl"];
-            var popeyeApiDeveloperKey = ConfigurationManager.AppSettings["PopeyeApiDeveloperKey"];
+            var filePath = "c:/temp/test.jpg";
+            var token = await S3Service.GetS3Token("upload");
+            S3Service.UploadFile(token, filePath);
+
+            var popeyeApiUrl = ConfigurationManager.AppSettings["PopeyeBaseUrl"];
+            var popeyeApiDeveloperKey = ConfigurationManager.AppSettings["MyobApiKey"];
 
             var config = new PopeyeConfiguration(popeyeApiDeveloperKey, popeyeApiUrl);
             var _emailClient = new PopeyeClient(config);
@@ -59,13 +63,13 @@ namespace aws_sdk
             {
                 new PopeyeAttachment()
                 {
-                   FileName = "test.jpg",
+                   FileName = Path.GetFileName(filePath),
                    Mime="application/jpg",
-                   S3Key = "2015/10/26/d141ac5784546e632c0cb0539ab6dfae/test.jpg",
-                   UploadPassword = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJwYXRoIjoiMjAxNS8xMC8yNi9kMTQxYWM1Nzg0NTQ2ZTYzMmMwY2IwNTM5YWI2ZGZhZSIsImV4cGlyZXMiOiIyMDE1LTEwLTI2VDA2OjI0OjQ1LjAwMFoifQ.dh6yD00Xloer--lHfaOMixwM4qaEaZNW88elRtOmB5o",
+                   S3Key = string.Format("{0}/{1}", token.path, Path.GetFileName(filePath)),
+                   UploadPassword = token.uploadPassword
                 }
             };
-
+           
             var response = _emailClient.SendEmailAsync(request).Result;
             Assert.AreEqual(HttpStatusCode.Accepted, response.HttpStatus);
         }
@@ -93,7 +97,7 @@ namespace aws_sdk
                     {
                         Company = new Company
                         {
-                            Uid = CompanyFileId,
+                            Uid = "123",
                             Name = "dev test company id"
                         },
                         Document = new Document { DocumentNumber = "PaySlip 001", DocumentType = ResourceType.PaySlip }
@@ -109,7 +113,7 @@ namespace aws_sdk
                             HeadingColour = string.Empty,
                         }
                     },
-                    Subject = "Test Email",
+                    Subject = "Test Email" + DateTime.Now,
                     WebHook = new PopeyeWebhook {Url = @"https://localhost:8080", Headers = new PopeyeWebhookHeaders()},
                 },
                

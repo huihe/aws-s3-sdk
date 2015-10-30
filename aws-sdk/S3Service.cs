@@ -22,7 +22,6 @@ namespace aws_sdk
                 if (!baseurl.EndsWith("/")) baseurl += "/";
 
                 httpClient.BaseAddress = new Uri(baseurl);
-                httpClient.DefaultRequestHeaders.Add("x-mashery-message-id", ConfigurationManager.AppSettings["MasheryMessageId"]);
                 httpClient.DefaultRequestHeaders.Add("x-myobapi-key", ConfigurationManager.AppSettings["MyobApiKey"]);
 
                 var response = await httpClient.GetStringAsync(endpoint);
@@ -39,29 +38,40 @@ namespace aws_sdk
             UploadFile(token, "c:/temp/test.jpg");
         }
 
-        public static async Task UploadFile(dynamic token, string filePath)
+        public static void UploadFile(dynamic token, string filePath)
         {
             try
             {
-                string keyName = string.Format("{0}/{1}", token.path, Path.GetFileName(filePath));
+                string path = token.path;
+                string accessKeyId = token.accessKeyId;
+                string secretAccessKey = token.secretAccessKey;
+                string sessionToken = token.sessionToken;
+                string bucket = token.bucket;
 
-                var client = new AmazonS3Client(token.accessKeyId, token.secretAccessKey, token.sessionToken, RegionEndpoint.APSoutheast2);
+                string keyName = string.Format("{0}/{1}", path, Path.GetFileName(filePath));
+
+                var client = new AmazonS3Client(accessKeyId, secretAccessKey, sessionToken, RegionEndpoint.APSoutheast2);
                 var fileTransferUtility = new TransferUtility(client);
 
                 var request = new TransferUtilityUploadRequest
                 {
-                    BucketName = token.bucket,
+                    BucketName = bucket,
                     FilePath = filePath,
                     Key = keyName,
                     PartSize = 6291456, // 6 MB.
                     ServerSideEncryptionMethod = ServerSideEncryptionMethod.AES256
                 };
 
-                await fileTransferUtility.UploadAsync(request);
+                fileTransferUtility.UploadAsync(request);
+                Trace.WriteLine(token.uploadPassword);
             }
             catch (AmazonS3Exception s3Exception)
             {
                 Console.WriteLine(s3Exception.Message, s3Exception.InnerException);
+            }
+            catch (Exception ex)
+            {
+                 Console.WriteLine(ex.Message);
             }
         }
     }
